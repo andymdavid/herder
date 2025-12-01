@@ -14,7 +14,13 @@ export interface SheepConfig extends Omit<SheepSettings, 'spawnPoints' | 'bounds
   boundsPadding: number
 }
 
-const SHEEP_HEIGHT = 0.5
+const SHEEP_HEIGHT = 0.45
+const BODY_COLOR = 0xf4f1e5
+const FLUFF_COLOR = 0xfaf7ef
+const HEAD_COLOR = 0x4f4a43
+const LEG_COLOR = 0x6a6862
+const HOOF_COLOR = 0x3b362f
+const TAIL_COLOR = 0xfaf7ef
 const IDLE_BOB_AMPLITUDE = 0.035
 const IDLE_BOB_SPEED = 1.8
 const HEAD_TILT_AMPLITUDE = 0.08
@@ -152,35 +158,64 @@ export class Sheep {
   private buildMesh(): THREE.Group {
     const group = new THREE.Group()
 
-    const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1, 0.5, 0.8), bodyMaterial)
-    body.position.y = 0.25
+    const bodyMaterial = new THREE.MeshStandardMaterial({ color: BODY_COLOR, roughness: 0.9 })
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.45, 1.2), bodyMaterial)
+    body.position.y = 0.22
     body.castShadow = true
 
-    const head = new THREE.Mesh(
-      new THREE.BoxGeometry(0.35, 0.35, 0.4),
-      new THREE.MeshStandardMaterial({ color: 0x55524d })
+    const fluff = new THREE.Mesh(
+      new THREE.BoxGeometry(1.1, 0.27, 1.35),
+      new THREE.MeshStandardMaterial({ color: FLUFF_COLOR })
     )
-    head.position.set(0, 0.5, 0.55)
+    fluff.position.y = 0.5
+    fluff.castShadow = true
+
+    const head = new THREE.Mesh(
+      new THREE.BoxGeometry(0.38, 0.32, 0.46),
+      new THREE.MeshStandardMaterial({ color: HEAD_COLOR })
+    )
+    head.position.set(0, 0.48, 0.6)
+    head.rotation.x = -0.08
     this.head = head
 
-    const legGeometry = new THREE.BoxGeometry(0.15, 0.35, 0.15)
-    const legMaterial = new THREE.MeshStandardMaterial({ color: 0x8f8a83 })
+    const muzzle = new THREE.Mesh(
+      new THREE.BoxGeometry(0.28, 0.18, 0.18),
+      new THREE.MeshStandardMaterial({ color: 0xdcd2c1 })
+    )
+    muzzle.position.set(0, 0.42, 0.8)
+
+    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.2), new THREE.MeshStandardMaterial({ color: TAIL_COLOR }))
+    tail.position.set(0, 0.4, -0.55)
+
+    const earMaterial = new THREE.MeshStandardMaterial({ color: HEAD_COLOR })
+    const earGeometry = new THREE.BoxGeometry(0.12, 0.12, 0.05)
+    const leftEar = new THREE.Mesh(earGeometry, earMaterial)
+    leftEar.position.set(-0.18, 0.52, 0.54)
+    const rightEar = leftEar.clone()
+    rightEar.position.x *= -1
+
+    const legGeometry = new THREE.BoxGeometry(0.14, 0.32, 0.14)
+    const legMaterial = new THREE.MeshStandardMaterial({ color: LEG_COLOR })
+    const hoofMaterial = new THREE.MeshStandardMaterial({ color: HOOF_COLOR })
     const offsets = [
-      [-0.3, -0.25],
-      [0.3, -0.25],
-      [-0.3, 0.25],
-      [0.3, 0.25]
+      [-0.25, -0.4],
+      [0.25, -0.4],
+      [-0.25, 0.45],
+      [0.25, 0.45]
     ] as const
     for (const [x, z] of offsets) {
       const leg = new THREE.Mesh(legGeometry, legMaterial)
       leg.position.set(x, 0.175, z)
       leg.castShadow = true
       group.add(leg)
+      const hoof = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.14), hoofMaterial)
+      hoof.position.set(0, -0.2, 0)
+      hoof.castShadow = true
+      leg.add(hoof)
     }
 
     head.castShadow = true
-    group.add(body, head)
+    group.add(body, fluff, head, muzzle, tail, leftEar, rightEar)
     group.castShadow = true
     group.receiveShadow = false
     return group

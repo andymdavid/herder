@@ -3,6 +3,7 @@ import { GAME_CONFIG } from './config'
 import { Game } from './Game'
 import { setupLighting } from './lighting'
 import { createTerrain } from './Terrain'
+import { StartScreen } from './ui/StartScreen'
 
 // Dev workflow: run `npm install` once, then `npm run dev` to spin up Vite's server and hot module reload loop.
 
@@ -41,6 +42,11 @@ const game = new Game({
   settings: config
 })
 // Future dog, sheep, and pen systems should instantiate their Three.js objects here and call `game.registerSystem(...)`.
+
+const startScreen = new StartScreen(() => {
+  game.start()
+})
+startScreen.show()
 
 const clock = new THREE.Clock()
 

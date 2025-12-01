@@ -82,35 +82,71 @@ export class Dog {
     const group = new THREE.Group()
 
     const body = new THREE.Mesh(
-      new THREE.BoxGeometry(0.8, 0.5, 1.3),
-      new THREE.MeshStandardMaterial({ color: 0x98694f, roughness: 0.8 })
+      new THREE.BoxGeometry(0.85, 0.55, 1.35),
+      new THREE.MeshStandardMaterial({ color: 0x936348, roughness: 0.8 })
     )
-    body.position.y = 0.25
+    body.position.y = 0.35
     body.castShadow = true
 
-    const head = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5, 0.45, 0.5),
-      new THREE.MeshStandardMaterial({ color: 0xb88865 })
+    const collar = new THREE.Mesh(
+      new THREE.BoxGeometry(0.72, 0.12, 0.5),
+      new THREE.MeshStandardMaterial({ color: 0x2b3144 })
     )
-    head.position.set(0, 0.55, 0.55)
+    collar.position.set(0, 0.5, 0.3)
+    collar.castShadow = true
+
+    const neckYOffset = 0.65
+    const head = new THREE.Mesh(
+      new THREE.BoxGeometry(0.5, 0.4, 0.55),
+      new THREE.MeshStandardMaterial({ color: 0xbd8f6c })
+    )
+    head.position.set(0, neckYOffset, 0.65)
     head.castShadow = true
 
+    const muzzle = new THREE.Mesh(
+      new THREE.BoxGeometry(0.4, 0.22, 0.25),
+      new THREE.MeshStandardMaterial({ color: 0xd5a37f })
+    )
+    muzzle.position.set(0, neckYOffset - 0.1, 0.9)
+    muzzle.castShadow = true
+
     const tail = new THREE.Mesh(
-      new THREE.BoxGeometry(0.15, 0.15, 0.4),
+      new THREE.BoxGeometry(0.12, 0.12, 0.45),
       new THREE.MeshStandardMaterial({ color: 0x7a4e32 })
     )
-    tail.position.set(0, 0.45, -0.85)
+    tail.position.set(0, 0.65, -0.85)
     tail.castShadow = true
+    tail.rotation.x = Math.PI / 5
 
-    const earMaterial = new THREE.MeshStandardMaterial({ color: 0x5c3822 })
-    const earGeometry = new THREE.BoxGeometry(0.18, 0.18, 0.1)
+    const earMaterial = new THREE.MeshStandardMaterial({ color: 0x4b2f1f })
+    const earGeometry = new THREE.BoxGeometry(0.15, 0.2, 0.08)
     const leftEar = new THREE.Mesh(earGeometry, earMaterial)
-    leftEar.position.set(-0.18, 0.75, 0.35)
+    leftEar.position.set(-0.2, 0.8, 0.52)
     leftEar.castShadow = true
     const rightEar = leftEar.clone()
     rightEar.position.x *= -1
 
-    group.add(body, head, tail, leftEar, rightEar)
+    const legGeometry = new THREE.BoxGeometry(0.18, 0.45, 0.18)
+    const legMaterial = new THREE.MeshStandardMaterial({ color: 0x5d3a27 })
+    const pawMaterial = new THREE.MeshStandardMaterial({ color: 0x3a241a })
+    const legOffsets: Array<[number, number]> = [
+      [-0.25, 0.35],
+      [0.25, 0.35],
+      [-0.25, -0.4],
+      [0.25, -0.4]
+    ]
+    for (const [x, z] of legOffsets) {
+      const leg = new THREE.Mesh(legGeometry, legMaterial)
+      leg.position.set(x, 0.2, z)
+      leg.castShadow = true
+      const paw = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.18), pawMaterial)
+      paw.position.set(0, -0.25, 0)
+      paw.castShadow = true
+      leg.add(paw)
+      group.add(leg)
+    }
+
+    group.add(body, collar, head, muzzle, tail, leftEar, rightEar)
     group.castShadow = true
 
     return group

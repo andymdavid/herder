@@ -41,7 +41,7 @@ export class Game {
   private readonly cameraOffset = new THREE.Vector3(18, 16, 18)
   private readonly systems: GameSystem[] = []
   // Simple state machine so gameplay only advances during active play.
-  private state: 'playing' | 'won' | 'lost' = 'playing'
+  private state: 'waiting' | 'playing' | 'won' | 'lost' = 'waiting'
   private remainingTime: number
   private readonly collisionNormal = new THREE.Vector3()
   private elapsed = 0
@@ -80,10 +80,14 @@ export class Game {
 
     this.hud = new HUD()
     this.helpOverlay = new HelpOverlay()
+    this.helpOverlay.hide()
     this.endScreen = new EndScreen(() => this.restart())
     this.remainingTime = this.settings.levelTimerSeconds
     this.hud.updateTimer(this.remainingTime)
     this.hud.resetSheepCounter(this.sheepManager.totalSheep)
+    this.input.setEnabled(false)
+    this.resetLevelState(false)
+    this.setEntitiesVisible(false)
   }
 
   registerSystem(system: GameSystem): void {
@@ -182,25 +186,48 @@ export class Game {
     this.endScreen.show('lost', this.remainingTime)
   }
 
-  private restart(): void {
-    this.pen.clearHighlight()
-    this.sheepManager.resetAll()
-    this.dog.reset(this.dogSpawn)
-    this.remainingTime = this.settings.levelTimerSeconds
-    this.elapsed = 0
-    this.sheepInsideLast = 0
-    this.hud.updateTimer(this.remainingTime)
-    this.hud.resetSheepCounter(this.sheepManager.totalSheep)
+  start(): void {
+    if (this.state === 'playing') {
+      return
+    }
+    this.resetLevelState(true)
+    this.setEntitiesVisible(true)
     this.state = 'playing'
-    this.endScreen.hide()
     this.input.setEnabled(true)
-    this.helpOverlay.reset()
-    this.helpOverlayDismissed = false
+  }
+
+  private restart(): void {
+    this.endScreen.hide()
+    this.start()
   }
 
   private updateCameraFollow(): void {
     const desiredPosition = this.dog.mesh.position.clone().add(this.cameraOffset)
     this.camera.position.lerp(desiredPosition, 0.1)
     this.camera.lookAt(this.dog.mesh.position)
+  }
+
+  private resetLevelState(showHelpOverlay: boolean): void {
+    this.pen.clearHighlight()
+    this.sheepManager.resetAll()
+    this.sheepInsideLast = 0
+    this.dog.reset(this.dogSpawn)
+    this.remainingTime = this.settings.levelTimerSeconds
+    this.elapsed = 0
+    this.sheepInsideLast = 0
+    this.hud.updateTimer(this.remainingTime)
+    this.hud.resetSheepCounter(this.sheepManager.totalSheep)
+    if (showHelpOverlay) {
+      this.helpOverlay.reset()
+      this.helpOverlayDismissed = false
+    } else {
+      this.helpOverlay.hide()
+      this.helpOverlayDismissed = true
+    }
+  }
+
+  private setEntitiesVisible(visible: boolean): void {
+    this.dog.mesh.visible = visible
+    this.sheepManager.setVisible(visible)
   }
 }

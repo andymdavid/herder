@@ -52,4 +52,10 @@ export class SheepManager {
       sheep.resetToSpawn()
     }
   }
+
+  setVisible(visible: boolean): void {
+    for (const sheep of this.sheep) {
+      sheep.mesh.visible = visible
+    }
+  }
 }

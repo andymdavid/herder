@@ -48,15 +48,16 @@ export const GAME_CONFIG: GameSettings = {
     idleDuration: [1.2, 2.6],
     boundsPadding: 1.2,
     spawnPoints: [
-      { x: -6, z: -5 },
-      { x: -2, z: 4 },
-      { x: 3, z: -3 },
-      { x: 6, z: 2 },
-      { x: 0, z: 0 },
-      { x: -8, z: 4 },
-      { x: 8, z: -4 },
-      { x: -4, z: 2 },
-      { x: 4, z: -2 }
+      { x: -8, z: 6 },
+      { x: -3, z: 5 },
+      { x: 2, z: 6 },
+      { x: 7, z: 4 },
+      { x: -6, z: 1 },
+      { x: -1, z: 2 },
+      { x: 4, z: 3 },
+      { x: -9, z: -1 },
+      { x: -2, z: -2 },
+      { x: 2, z: -1 }
     ]
   },
   pen: {
