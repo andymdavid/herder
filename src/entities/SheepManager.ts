@@ -10,6 +10,8 @@ interface SheepManagerConfig {
   settings: SheepSettings
 }
 
+type SheepMoveCallback = (sheep: Sheep, previous: THREE.Vector3, current: THREE.Vector3) => void
+
 export class SheepManager {
   private readonly sheep: Sheep[]
 
@@ -29,9 +31,11 @@ export class SheepManager {
     }
   }
 
-  update(deltaTime: number, dogPosition: THREE.Vector3): void {
+  update(deltaTime: number, dogPosition: THREE.Vector3, onMove?: SheepMoveCallback): void {
     for (const sheep of this.sheep) {
+      const prev = sheep.position.clone()
       sheep.update(deltaTime, dogPosition)
+      onMove?.(sheep, prev, sheep.position)
     }
   }
 

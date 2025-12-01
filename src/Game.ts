@@ -39,6 +39,7 @@ export class Game {
   private levelComplete = false
   private timeExpired = false
   private remainingTime: number
+  private readonly collisionNormal = new THREE.Vector3()
   private elapsed = 0
 
   constructor(config: GameConfig) {
@@ -85,9 +86,16 @@ export class Game {
     this.updateTimer(delta)
 
     if (!this.isFrozen()) {
+      const dogPrevious = this.dog.mesh.position.clone()
       const inputState = this.input.getState()
       this.dog.update(delta, inputState)
-      this.sheepManager.update(delta, this.dog.mesh.position)
+      this.pen.enforceCollision(dogPrevious, this.dog.mesh.position, 0.45)
+
+      this.sheepManager.update(delta, this.dog.mesh.position, (sheep, prev, current) => {
+        if (this.pen.enforceCollision(prev, current, 0.35, this.collisionNormal)) {
+          sheep.bounceFromFence(this.collisionNormal)
+        }
+      })
     }
 
     this.trackPenProgress()

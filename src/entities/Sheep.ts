@@ -83,6 +83,20 @@ export class Sheep {
     }
   }
 
+  bounceFromFence(normal: THREE.Vector3): void {
+    const incident = this.velocity.lengthSq() > 0 ? this.velocity.clone() : this.wanderDirection.clone()
+    if (incident.lengthSq() === 0) {
+      incident.set(Math.random() - 0.5, 0, Math.random() - 0.5)
+    }
+    incident.normalize()
+    const reflected = incident.reflect(normal).normalize()
+    this.wanderDirection.copy(reflected)
+    this.state = SheepState.Wander
+    this.stateTimer = randomInRange(this.config.wanderDuration)
+    this.desiredVelocity.copy(reflected).multiplyScalar(this.config.wanderSpeed)
+    this.velocity.copy(reflected).multiplyScalar(this.config.wanderSpeed * 0.5)
+  }
+
   private setState(next: SheepState): void {
     if (this.state === next) {
       return

@@ -54,8 +54,8 @@ export const GAME_CONFIG: GameSettings = {
     ]
   },
   pen: {
-    width: 8,
-    height: 6,
+    width: 10,
+    height: 8,
     position: { x: 12, z: -6 }
   }
 }
