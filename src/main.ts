@@ -4,6 +4,7 @@ import { Game } from './Game'
 import { setupLighting } from './lighting'
 import { createTerrain } from './Terrain'
 import { StartScreen } from './ui/StartScreen'
+import { MusicController } from './audio/MusicController'
 
 // Dev workflow: run `npm install` once, then `npm run dev` to spin up Vite's server and hot module reload loop.
 
@@ -35,11 +36,14 @@ setupLighting({ scene, shadowSize: 2048, terrainSize: config.terrainSize })
 const terrain = createTerrain(config.terrainSize, config.terrainSize, config.terrainHeight)
 scene.add(terrain)
 
+const music = new MusicController('/audio/background.mp3')
+
 const game = new Game({
   scene,
   terrain,
   camera,
-  settings: config
+  settings: config,
+  music
 })
 // Future dog, sheep, and pen systems should instantiate their Three.js objects here and call `game.registerSystem(...)`.
 

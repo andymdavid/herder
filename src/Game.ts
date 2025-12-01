@@ -9,12 +9,15 @@ import type { MovementBounds } from './types'
 import { HUD } from './ui/HUD'
 import { HelpOverlay } from './ui/HelpOverlay'
 import { EndScreen } from './ui/EndScreen'
+import { MusicController } from './audio/MusicController'
+import { MusicToggle } from './ui/MusicToggle'
 
 export interface GameConfig {
   scene: Scene
   terrain: Group
   camera: PerspectiveCamera
   settings: GameSettings
+  music?: MusicController
 }
 
 export interface GameSystem {
@@ -38,6 +41,8 @@ export class Game {
   private readonly hud: HUD
   private readonly endScreen: EndScreen
   private readonly helpOverlay: HelpOverlay
+  private readonly music?: MusicController
+  private readonly musicToggle?: MusicToggle
   private readonly cameraOffset = new THREE.Vector3(18, 16, 18)
   private readonly systems: GameSystem[] = []
   // Simple state machine so gameplay only advances during active play.
@@ -54,6 +59,7 @@ export class Game {
     this.terrain = config.terrain
     this.camera = config.camera
     this.settings = config.settings
+    this.music = config.music
 
     this.dog = new Dog(this.settings.dog)
     const terrainBounds: MovementBounds = {
@@ -88,6 +94,16 @@ export class Game {
     this.input.setEnabled(false)
     this.resetLevelState(false)
     this.setEntitiesVisible(false)
+    if (this.music) {
+      this.musicToggle = new MusicToggle((enabled) => {
+        if (enabled) {
+          this.music?.start()
+        } else {
+          this.music?.stop()
+        }
+      })
+      this.musicToggle.setState(true)
+    }
   }
 
   registerSystem(system: GameSystem): void {
@@ -178,12 +194,14 @@ export class Game {
     this.state = 'won'
     this.input.setEnabled(false)
     this.endScreen.show('won', this.remainingTime)
+    this.music?.stop()
   }
 
   private handleTimeExpired(): void {
     this.state = 'lost'
     this.input.setEnabled(false)
     this.endScreen.show('lost', this.remainingTime)
+    this.music?.stop()
   }
 
   start(): void {
@@ -194,6 +212,7 @@ export class Game {
     this.setEntitiesVisible(true)
     this.state = 'playing'
     this.input.setEnabled(true)
+    this.music?.start()
   }
 
   private restart(): void {
