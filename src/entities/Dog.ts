@@ -8,6 +8,9 @@ export interface DogConfig {
 }
 
 const DEFAULT_HEIGHT = 0.6
+const IDLE_BOB_AMPLITUDE = 0.05
+const IDLE_BOB_SPEED = 2.2
+const IDLE_ROTATION_AMPLITUDE = 0.03
 
 /** Simple voxel-inspired placeholder the player will control. */
 export class Dog {
@@ -18,6 +21,8 @@ export class Dog {
   private bounds?: MovementBounds
   private readonly velocity = new THREE.Vector3()
   private readonly workVector = new THREE.Vector3()
+  private time = 0
+  private heading = 0
 
   constructor(config: DogConfig) {
     this.moveSpeed = config.moveSpeed
@@ -37,6 +42,7 @@ export class Dog {
   }
 
   update(deltaTime: number, input: InputState): void {
+    this.time += deltaTime
     const x = (input.right ? 1 : 0) - (input.left ? 1 : 0)
     const z = (input.backward ? 1 : 0) - (input.forward ? 1 : 0)
     this.workVector.set(x, 0, z)
@@ -51,11 +57,20 @@ export class Dog {
 
     this.mesh.position.addScaledVector(this.velocity, deltaTime)
     this.applyMovementBounds()
-    this.mesh.position.y = DEFAULT_HEIGHT / 2
+    const speed = this.velocity.length()
+    const bobIntensity = speed < 0.1 ? 1 : 0.2
+    const bob = Math.sin(this.time * IDLE_BOB_SPEED) * IDLE_BOB_AMPLITUDE * bobIntensity
+    this.mesh.position.y = DEFAULT_HEIGHT / 2 + bob
 
     if (this.velocity.lengthSq() > 0.0001) {
-      const heading = Math.atan2(this.velocity.x, this.velocity.z)
-      this.mesh.rotation.y = heading
+      this.heading = Math.atan2(this.velocity.x, this.velocity.z)
+    }
+
+    if (speed < 0.1) {
+      const sway = Math.sin(this.time * IDLE_BOB_SPEED * 0.6) * IDLE_ROTATION_AMPLITUDE
+      this.mesh.rotation.y = this.heading + sway
+    } else {
+      this.mesh.rotation.y = this.heading
     }
   }
 

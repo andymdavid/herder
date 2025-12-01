@@ -15,6 +15,9 @@ export interface SheepConfig extends Omit<SheepSettings, 'spawnPoints' | 'bounds
 }
 
 const SHEEP_HEIGHT = 0.5
+const IDLE_BOB_AMPLITUDE = 0.035
+const IDLE_BOB_SPEED = 1.8
+const HEAD_TILT_AMPLITUDE = 0.08
 
 export class Sheep {
   public readonly mesh: THREE.Group
@@ -23,6 +26,8 @@ export class Sheep {
   private readonly velocity = new THREE.Vector3()
   private readonly desiredVelocity = new THREE.Vector3()
   private readonly wanderDirection = new THREE.Vector3(1, 0, 0)
+  private elapsed = 0
+  private head?: THREE.Mesh
 
   constructor(private readonly config: SheepConfig) {
     this.mesh = this.buildMesh()
@@ -38,6 +43,7 @@ export class Sheep {
   }
 
   update(deltaTime: number, dogPosition: THREE.Vector3): void {
+    this.elapsed += deltaTime
     const flatDog = new THREE.Vector3(dogPosition.x, 0, dogPosition.z)
     const flatPos = new THREE.Vector3(this.mesh.position.x, 0, this.mesh.position.z)
     const distanceToDog = flatPos.distanceTo(flatDog)
@@ -58,11 +64,16 @@ export class Sheep {
     this.computeDesiredVelocity(flatDog)
     this.velocity.lerp(this.desiredVelocity, Math.min(1, deltaTime * 3))
     this.mesh.position.addScaledVector(this.velocity, deltaTime)
-    this.mesh.position.y = SHEEP_HEIGHT / 2
+    const bob = Math.sin(this.elapsed * IDLE_BOB_SPEED) * IDLE_BOB_AMPLITUDE
+    this.mesh.position.y = SHEEP_HEIGHT / 2 + bob
     this.enforceBounds()
 
     if (this.velocity.lengthSq() > 0.0001) {
       this.mesh.rotation.y = Math.atan2(this.velocity.x, this.velocity.z)
+    }
+
+    if (this.head) {
+      this.head.rotation.z = Math.sin(this.elapsed * (IDLE_BOB_SPEED + 0.5)) * HEAD_TILT_AMPLITUDE
     }
   }
 
@@ -151,6 +162,7 @@ export class Sheep {
       new THREE.MeshStandardMaterial({ color: 0x55524d })
     )
     head.position.set(0, 0.5, 0.55)
+    this.head = head
 
     const legGeometry = new THREE.BoxGeometry(0.15, 0.35, 0.15)
     const legMaterial = new THREE.MeshStandardMaterial({ color: 0x8f8a83 })

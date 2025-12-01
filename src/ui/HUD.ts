@@ -1,5 +1,6 @@
 export class HUD {
   private readonly root: HTMLDivElement
+  private readonly titleEl: HTMLDivElement
   private readonly timerEl: HTMLDivElement
   private readonly sheepEl: HTMLDivElement
   private readonly messageEl: HTMLDivElement
@@ -14,7 +15,9 @@ export class HUD {
     this.root.style.left = '0'
     this.root.style.right = '0'
     this.root.style.padding = '16px'
-    this.root.style.display = 'flex'
+    this.root.style.display = 'grid'
+    this.root.style.gridTemplateColumns = '1fr auto 1fr'
+    this.root.style.alignItems = 'center'
     this.root.style.justifyContent = 'space-between'
     this.root.style.fontFamily = 'sans-serif'
     this.root.style.color = '#1b2315'
@@ -22,8 +25,19 @@ export class HUD {
     this.root.style.pointerEvents = 'none'
     this.root.style.textShadow = '0 1px 3px rgba(255,255,255,0.6)'
 
+    this.titleEl = document.createElement('div')
+    this.titleEl.textContent = 'Yuletide Herding'
+    this.titleEl.style.fontFamily = '"Press Start 2P", monospace'
+    this.titleEl.style.fontSize = '18px'
+    this.titleEl.style.letterSpacing = '0.25px'
+    this.titleEl.style.textTransform = 'uppercase'
+    this.titleEl.style.textAlign = 'center'
+    this.titleEl.style.justifySelf = 'center'
+
     this.timerEl = document.createElement('div')
+    this.timerEl.style.fontWeight = '700'
     this.sheepEl = document.createElement('div')
+    this.sheepEl.style.justifySelf = 'end'
     this.sheepEl.className = 'hud-sheep-counter'
 
     this.messageEl = document.createElement('div')
@@ -40,13 +54,16 @@ export class HUD {
     this.messageEl.style.display = 'none'
 
     this.root.appendChild(this.timerEl)
+    this.root.appendChild(this.titleEl)
     this.root.appendChild(this.sheepEl)
     document.body.appendChild(this.root)
     document.body.appendChild(this.messageEl)
   }
 
   updateTimer(seconds: number): void {
-    this.timerEl.textContent = `Time: ${Math.max(0, Math.ceil(seconds)).toString()}s`
+    const remaining = Math.max(0, Math.ceil(seconds))
+    this.timerEl.textContent = `Time: ${remaining.toString()}s`
+    this.timerEl.style.color = remaining <= 15 ? '#b02a37' : '#1b2315'
   }
 
   updateSheepCount(inPen: number, total: number, delta = 0): void {
@@ -93,6 +110,7 @@ export class HUD {
     }
     const style = document.createElement('style')
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
       .hud-sheep-counter {
         transition: transform 0.3s ease, color 0.3s ease;
         font-weight: 600;
