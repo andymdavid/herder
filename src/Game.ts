@@ -7,6 +7,8 @@ import { SheepManager } from './entities/SheepManager'
 import { InputController } from './input/Input'
 import type { MovementBounds } from './types'
 import { HUD } from './ui/HUD'
+import { HelpOverlay } from './ui/HelpOverlay'
+import { EndScreen } from './ui/EndScreen'
 
 export interface GameConfig {
   scene: Scene
@@ -34,14 +36,18 @@ export class Game {
   private readonly pen: Pen
   private readonly sheepManager: SheepManager
   private readonly hud: HUD
+  private readonly endScreen: EndScreen
+  private readonly helpOverlay: HelpOverlay
   private readonly cameraOffset = new THREE.Vector3(18, 16, 18)
   private readonly systems: GameSystem[] = []
-  private levelComplete = false
-  private timeExpired = false
+  // Simple state machine so gameplay only advances during active play.
+  private state: 'playing' | 'won' | 'lost' = 'playing'
   private remainingTime: number
   private readonly collisionNormal = new THREE.Vector3()
   private elapsed = 0
   private sheepInsideLast = 0
+  private readonly dogSpawn = new THREE.Vector3()
+  private helpOverlayDismissed = false
 
   constructor(config: GameConfig) {
     this.scene = config.scene
@@ -57,6 +63,7 @@ export class Game {
     }
     this.dog.setMovementBounds(terrainBounds)
     this.scene.add(this.dog.mesh)
+    this.dogSpawn.copy(this.dog.mesh.position)
 
     this.pen = new Pen(this.settings.pen)
     this.scene.add(this.pen.mesh)
@@ -72,9 +79,11 @@ export class Game {
     })
 
     this.hud = new HUD()
+    this.helpOverlay = new HelpOverlay()
+    this.endScreen = new EndScreen(() => this.restart())
     this.remainingTime = this.settings.levelTimerSeconds
     this.hud.updateTimer(this.remainingTime)
-    this.hud.updateSheepCount(0, this.sheepManager.totalSheep)
+    this.hud.resetSheepCounter(this.sheepManager.totalSheep)
   }
 
   registerSystem(system: GameSystem): void {
@@ -83,12 +92,21 @@ export class Game {
 
   /** Called once per frame by the render loop. */
   update(delta: number): void {
+    if (this.state !== 'playing') {
+      return
+    }
+
     this.elapsed += delta
     this.updateTimer(delta)
 
-    if (!this.isFrozen()) {
+    if (this.state === 'playing') {
       const dogPrevious = this.dog.mesh.position.clone()
       const inputState = this.input.getState()
+      const movementIntent = inputState.forward || inputState.backward || inputState.left || inputState.right
+      if (movementIntent && !this.helpOverlayDismissed) {
+        this.helpOverlay.hide()
+        this.helpOverlayDismissed = true
+      }
       this.dog.update(delta, inputState)
       this.pen.enforceCollision(dogPrevious, this.dog.mesh.position, 0.45)
 
@@ -136,42 +154,48 @@ export class Game {
     }
     this.sheepInsideLast = sheepInside
 
-    if (
-      !this.levelComplete &&
-      !this.timeExpired &&
-      sheepInside === this.sheepManager.totalSheep &&
-      this.sheepManager.totalSheep > 0
-    ) {
+    if (this.state === 'playing' && sheepInside === this.sheepManager.totalSheep && this.sheepManager.totalSheep > 0) {
       this.handleLevelComplete()
     }
   }
 
   private updateTimer(delta: number): void {
-    if (this.levelComplete || this.timeExpired) {
-      return
-    }
     this.remainingTime = Math.max(0, this.remainingTime - delta)
     this.hud.updateTimer(this.remainingTime)
-    if (this.remainingTime <= 0) {
-      this.handleTimeExpired()
+    if (this.remainingTime <= 0 && this.state === 'playing') {
+      const allInPen = this.sheepInsideLast === this.sheepManager.totalSheep && this.sheepManager.totalSheep > 0
+      if (!allInPen) {
+        this.handleTimeExpired()
+      }
     }
   }
 
   private handleLevelComplete(): void {
-    this.levelComplete = true
+    this.state = 'won'
     this.input.setEnabled(false)
-    this.hud.showMessage(`Level complete! ${Math.ceil(this.remainingTime)}s left`)
-    console.log('Level complete')
+    this.endScreen.show('won', this.remainingTime)
   }
 
   private handleTimeExpired(): void {
-    this.timeExpired = true
+    this.state = 'lost'
     this.input.setEnabled(false)
-    this.hud.showMessage("Time's up!")
+    this.endScreen.show('lost', this.remainingTime)
   }
 
-  private isFrozen(): boolean {
-    return this.levelComplete || this.timeExpired
+  private restart(): void {
+    this.pen.clearHighlight()
+    this.sheepManager.resetAll()
+    this.dog.reset(this.dogSpawn)
+    this.remainingTime = this.settings.levelTimerSeconds
+    this.elapsed = 0
+    this.sheepInsideLast = 0
+    this.hud.updateTimer(this.remainingTime)
+    this.hud.resetSheepCounter(this.sheepManager.totalSheep)
+    this.state = 'playing'
+    this.endScreen.hide()
+    this.input.setEnabled(true)
+    this.helpOverlay.reset()
+    this.helpOverlayDismissed = false
   }
 
   private updateCameraFollow(): void {

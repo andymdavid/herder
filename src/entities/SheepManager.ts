@@ -46,4 +46,10 @@ export class SheepManager {
   getAll(): readonly Sheep[] {
     return this.sheep
   }
+
+  resetAll(): void {
+    for (const sheep of this.sheep) {
+      sheep.resetToSpawn()
+    }
+  }
 }

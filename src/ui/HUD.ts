@@ -68,6 +68,12 @@ export class HUD {
     this.messageEl.style.display = 'none'
   }
 
+  resetSheepCounter(total: number): void {
+    window.clearTimeout(this.sheepTimeout)
+    this.sheepEl.classList.remove('hud-counter-positive', 'hud-counter-negative')
+    this.updateSheepCount(0, total)
+  }
+
   private applyCounterPulse(effect: string): void {
     this.sheepEl.classList.remove('hud-counter-positive', 'hud-counter-negative')
     // Force reflow so animation can replay even if the same class is applied consecutively.

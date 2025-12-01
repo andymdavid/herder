@@ -28,6 +28,14 @@ export class Dog {
     this.mesh.position.y = DEFAULT_HEIGHT / 2
   }
 
+  reset(position: THREE.Vector3): void {
+    this.velocity.set(0, 0, 0)
+    this.workVector.set(0, 0, 0)
+    this.mesh.position.copy(position)
+    this.mesh.position.y = DEFAULT_HEIGHT / 2
+    this.mesh.rotation.set(0, 0, 0)
+  }
+
   update(deltaTime: number, input: InputState): void {
     const x = (input.right ? 1 : 0) - (input.left ? 1 : 0)
     const z = (input.backward ? 1 : 0) - (input.forward ? 1 : 0)

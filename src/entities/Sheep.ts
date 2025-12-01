@@ -30,6 +30,13 @@ export class Sheep {
     this.applyState(SheepState.Idle)
   }
 
+  resetToSpawn(): void {
+    this.mesh.position.set(this.config.spawnPoint.x, SHEEP_HEIGHT / 2, this.config.spawnPoint.z)
+    this.velocity.set(0, 0, 0)
+    this.desiredVelocity.set(0, 0, 0)
+    this.applyState(SheepState.Idle)
+  }
+
   update(deltaTime: number, dogPosition: THREE.Vector3): void {
     const flatDog = new THREE.Vector3(dogPosition.x, 0, dogPosition.z)
     const flatPos = new THREE.Vector3(this.mesh.position.x, 0, this.mesh.position.z)

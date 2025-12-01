@@ -45,16 +45,21 @@ export class Pen {
     }
     window.clearTimeout(this.highlightTimeout)
     this.highlightTimeout = window.setTimeout(() => {
-      for (const mat of this.fenceMaterials) {
-        const base = this.baseColors.get(mat)
-        if (base) {
-          mat.color.copy(base)
-          if ('emissive' in mat && mat.emissive instanceof THREE.Color) {
-            mat.emissive.setHex(0)
-          }
+      this.clearHighlight()
+    }, 300)
+  }
+
+  clearHighlight(): void {
+    window.clearTimeout(this.highlightTimeout)
+    for (const mat of this.fenceMaterials) {
+      const base = this.baseColors.get(mat)
+      if (base) {
+        mat.color.copy(base)
+        if ('emissive' in mat && mat.emissive instanceof THREE.Color) {
+          mat.emissive.setHex(0)
         }
       }
-    }, 300)
+    }
   }
 
   isSheepInside(sheepPosition: THREE.Vector3): boolean {
