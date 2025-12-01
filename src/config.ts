@@ -27,10 +27,12 @@ export interface GameSettings {
   dog: DogSettings
   sheep: SheepSettings
   pen: PenSettings
+  levelTimerSeconds: number
 }
 
 export const GAME_CONFIG: GameSettings = {
   terrainSize: 40,
+  levelTimerSeconds: 60,
   dog: {
     moveSpeed: 6,
     acceleration: 18,

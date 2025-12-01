@@ -30,6 +30,7 @@ const DEFAULT_STATE: InputState = {
 export class InputController {
   private readonly state: InputState = { ...DEFAULT_STATE }
   private readonly pressedKeys = new Set<string>()
+  private enabled = true
 
   constructor(private readonly target: Window = window) {
     this.target.addEventListener('keydown', this.handleKeyDown)
@@ -45,7 +46,17 @@ export class InputController {
   }
 
   getState(): InputState {
+    if (!this.enabled) {
+      return { ...DEFAULT_STATE }
+    }
     return { ...this.state }
+  }
+
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled
+    if (!enabled) {
+      this.reset()
+    }
   }
 
   private handleKeyDown = (event: KeyboardEvent): void => {

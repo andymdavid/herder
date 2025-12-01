@@ -6,6 +6,7 @@ import { Pen } from './entities/Pen'
 import { SheepManager } from './entities/SheepManager'
 import { InputController } from './input/Input'
 import type { MovementBounds } from './types'
+import { HUD } from './ui/HUD'
 
 export interface GameConfig {
   scene: Scene
@@ -32,9 +33,12 @@ export class Game {
   private readonly dog: Dog
   private readonly pen: Pen
   private readonly sheepManager: SheepManager
+  private readonly hud: HUD
   private readonly cameraOffset = new THREE.Vector3(18, 16, 18)
   private readonly systems: GameSystem[] = []
   private levelComplete = false
+  private timeExpired = false
+  private remainingTime: number
   private elapsed = 0
 
   constructor(config: GameConfig) {
@@ -64,6 +68,11 @@ export class Game {
       },
       settings: this.settings.sheep
     })
+
+    this.hud = new HUD()
+    this.remainingTime = this.settings.levelTimerSeconds
+    this.hud.updateTimer(this.remainingTime)
+    this.hud.updateSheepCount(0, this.sheepManager.totalSheep)
   }
 
   registerSystem(system: GameSystem): void {
@@ -73,9 +82,14 @@ export class Game {
   /** Called once per frame by the render loop. */
   update(delta: number): void {
     this.elapsed += delta
-    const inputState = this.input.getState()
-    this.dog.update(delta, inputState)
-    this.sheepManager.update(delta, this.dog.mesh.position)
+    this.updateTimer(delta)
+
+    if (!this.isFrozen()) {
+      const inputState = this.input.getState()
+      this.dog.update(delta, inputState)
+      this.sheepManager.update(delta, this.dog.mesh.position)
+    }
+
     this.trackPenProgress()
     this.updateCameraFollow()
     for (const system of this.systems) {
@@ -103,17 +117,47 @@ export class Game {
   }
 
   private trackPenProgress(): void {
-    if (this.levelComplete) {
-      return
-    }
     const sheepInside = this.sheepManager
       .getAll()
       .filter((sheep) => this.pen.isSheepInside(sheep.position)).length
+    this.hud.updateSheepCount(sheepInside, this.sheepManager.totalSheep)
 
-    if (sheepInside === this.sheepManager.totalSheep && this.sheepManager.totalSheep > 0) {
-      this.levelComplete = true
-      console.log('Level complete')
+    if (
+      !this.levelComplete &&
+      !this.timeExpired &&
+      sheepInside === this.sheepManager.totalSheep &&
+      this.sheepManager.totalSheep > 0
+    ) {
+      this.handleLevelComplete()
     }
+  }
+
+  private updateTimer(delta: number): void {
+    if (this.levelComplete || this.timeExpired) {
+      return
+    }
+    this.remainingTime = Math.max(0, this.remainingTime - delta)
+    this.hud.updateTimer(this.remainingTime)
+    if (this.remainingTime <= 0) {
+      this.handleTimeExpired()
+    }
+  }
+
+  private handleLevelComplete(): void {
+    this.levelComplete = true
+    this.input.setEnabled(false)
+    this.hud.showMessage(`Level complete! ${Math.ceil(this.remainingTime)}s left`)
+    console.log('Level complete')
+  }
+
+  private handleTimeExpired(): void {
+    this.timeExpired = true
+    this.input.setEnabled(false)
+    this.hud.showMessage("Time's up!")
+  }
+
+  private isFrozen(): boolean {
+    return this.levelComplete || this.timeExpired
   }
 
   private updateCameraFollow(): void {
