@@ -24,6 +24,7 @@ export class Dog {
     this.acceleration = config.acceleration
 
     this.mesh = this.buildMesh()
+    this.mesh.castShadow = true
     this.mesh.position.y = DEFAULT_HEIGHT / 2
   }
 
@@ -62,23 +63,27 @@ export class Dog {
       new THREE.MeshStandardMaterial({ color: 0x98694f, roughness: 0.8 })
     )
     body.position.y = 0.25
+    body.castShadow = true
 
     const head = new THREE.Mesh(
       new THREE.BoxGeometry(0.5, 0.45, 0.5),
       new THREE.MeshStandardMaterial({ color: 0xb88865 })
     )
     head.position.set(0, 0.55, 0.55)
+    head.castShadow = true
 
     const tail = new THREE.Mesh(
       new THREE.BoxGeometry(0.15, 0.15, 0.4),
       new THREE.MeshStandardMaterial({ color: 0x7a4e32 })
     )
     tail.position.set(0, 0.45, -0.85)
+    tail.castShadow = true
 
     const earMaterial = new THREE.MeshStandardMaterial({ color: 0x5c3822 })
     const earGeometry = new THREE.BoxGeometry(0.18, 0.18, 0.1)
     const leftEar = new THREE.Mesh(earGeometry, earMaterial)
     leftEar.position.set(-0.18, 0.75, 0.35)
+    leftEar.castShadow = true
     const rightEar = leftEar.clone()
     rightEar.position.x *= -1
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GAME_CONFIG } from './config'
 import { Game } from './Game'
+import { setupLighting } from './lighting'
 import { createTerrain } from './Terrain'
 
 // Dev workflow: run `npm install` once, then `npm run dev` to spin up Vite's server and hot module reload loop.
@@ -21,24 +22,15 @@ camera.lookAt(0, 0, 0)
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.outputColorSpace = THREE.SRGBColorSpace
+renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
 document.body.style.margin = '0'
 document.body.appendChild(renderer.domElement)
 
-const ambientLight = new THREE.AmbientLight(0xddeeff, 0.4)
-scene.add(ambientLight)
-
-const sunLight = new THREE.DirectionalLight(0xfff2cf, 1.8)
-sunLight.position.set(40, 55, 20)
-sunLight.target.position.set(0, 0, 0)
-sunLight.castShadow = true
-sunLight.shadow.mapSize.set(1024, 1024)
-sunLight.shadow.camera.near = 5
-sunLight.shadow.camera.far = 120
-scene.add(sunLight)
-scene.add(sunLight.target)
-
 const config = GAME_CONFIG
+setupLighting({ scene, shadowSize: 2048, terrainSize: config.terrainSize })
 const terrain = createTerrain(config.terrainSize, config.terrainSize, config.terrainHeight)
 scene.add(terrain)
 

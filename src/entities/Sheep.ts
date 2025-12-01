@@ -137,6 +137,7 @@ export class Sheep {
     const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
     const body = new THREE.Mesh(new THREE.BoxGeometry(1, 0.5, 0.8), bodyMaterial)
     body.position.y = 0.25
+    body.castShadow = true
 
     const head = new THREE.Mesh(
       new THREE.BoxGeometry(0.35, 0.35, 0.4),
@@ -155,9 +156,11 @@ export class Sheep {
     for (const [x, z] of offsets) {
       const leg = new THREE.Mesh(legGeometry, legMaterial)
       leg.position.set(x, 0.175, z)
+      leg.castShadow = true
       group.add(leg)
     }
 
+    head.castShadow = true
     group.add(body, head)
     group.castShadow = true
     group.receiveShadow = false

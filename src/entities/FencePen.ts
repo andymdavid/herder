@@ -79,6 +79,7 @@ function addRails(group: THREE.Group, config: FencePenConfig & { gateWidth: numb
 
     for (const rail of [leftRail, rightRail, ...horizontalSegments]) {
       rail.castShadow = true
+      rail.receiveShadow = true
       group.add(rail)
     }
 
