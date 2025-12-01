@@ -3,8 +3,11 @@ export class HUD {
   private readonly timerEl: HTMLDivElement
   private readonly sheepEl: HTMLDivElement
   private readonly messageEl: HTMLDivElement
+  private lastSheepCount = 0
+  private sheepTimeout?: number
 
   constructor() {
+    HUD.injectStyles()
     this.root = document.createElement('div')
     this.root.style.position = 'fixed'
     this.root.style.top = '0'
@@ -21,6 +24,7 @@ export class HUD {
 
     this.timerEl = document.createElement('div')
     this.sheepEl = document.createElement('div')
+    this.sheepEl.className = 'hud-sheep-counter'
 
     this.messageEl = document.createElement('div')
     this.messageEl.style.position = 'fixed'
@@ -45,8 +49,14 @@ export class HUD {
     this.timerEl.textContent = `Time: ${Math.max(0, Math.ceil(seconds)).toString()}s`
   }
 
-  updateSheepCount(inPen: number, total: number): void {
+  updateSheepCount(inPen: number, total: number, delta = 0): void {
     this.sheepEl.textContent = `Sheep: ${inPen}/${total}`
+    if (delta === 0) {
+      return
+    }
+    const className = delta > 0 ? 'hud-counter-positive' : 'hud-counter-negative'
+    this.applyCounterPulse(className)
+    this.lastSheepCount = inPen
   }
 
   showMessage(text: string): void {
@@ -56,5 +66,41 @@ export class HUD {
 
   hideMessage(): void {
     this.messageEl.style.display = 'none'
+  }
+
+  private applyCounterPulse(effect: string): void {
+    this.sheepEl.classList.remove('hud-counter-positive', 'hud-counter-negative')
+    // Force reflow so animation can replay even if the same class is applied consecutively.
+    void this.sheepEl.offsetWidth
+    this.sheepEl.classList.add(effect)
+    window.clearTimeout(this.sheepTimeout)
+    this.sheepTimeout = window.setTimeout(() => {
+      this.sheepEl.classList.remove(effect)
+    }, 350)
+  }
+
+  private static stylesInjected = false
+
+  private static injectStyles(): void {
+    if (HUD.stylesInjected) {
+      return
+    }
+    const style = document.createElement('style')
+    style.textContent = `
+      .hud-sheep-counter {
+        transition: transform 0.3s ease, color 0.3s ease;
+        font-weight: 600;
+      }
+      .hud-sheep-counter.hud-counter-positive {
+        transform: scale(1.2);
+        color: #2f8d3a;
+      }
+      .hud-sheep-counter.hud-counter-negative {
+        transform: scale(0.9);
+        color: #b02a37;
+      }
+    `
+    document.head.appendChild(style)
+    HUD.stylesInjected = true
   }
 }

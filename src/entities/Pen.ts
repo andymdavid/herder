@@ -9,6 +9,9 @@ export class Pen {
   private readonly gateWidth: number
   private readonly colliders: Collider[]
   private readonly position = new THREE.Vector3()
+  private readonly fenceMaterials: THREE.MeshStandardMaterial[] = []
+  private readonly baseColors = new Map<THREE.MeshStandardMaterial, THREE.Color>()
+  private highlightTimeout?: number
 
   constructor(private readonly settings: PenSettings) {
     this.gateWidth = Math.min(settings.width - 0.5, DEFAULT_GATE_WIDTH)
@@ -23,8 +26,35 @@ export class Pen {
     this.halfWidth = settings.width / 2
     this.halfHeight = settings.height / 2
     this.colliders = this.createColliders()
+    this.captureFenceMaterials()
 
     this.position.set(settings.position.x, 0, settings.position.z)
+  }
+
+  flashHighlight(): void {
+    const highlightColor = new THREE.Color(0xffe9b0)
+    const mixAmount = 0.75
+    for (const mat of this.fenceMaterials) {
+      const base = this.baseColors.get(mat)
+      if (base) {
+        mat.color.copy(base).lerp(highlightColor, mixAmount)
+        if ('emissive' in mat && mat.emissive instanceof THREE.Color) {
+          mat.emissive.setHex(0x442200)
+        }
+      }
+    }
+    window.clearTimeout(this.highlightTimeout)
+    this.highlightTimeout = window.setTimeout(() => {
+      for (const mat of this.fenceMaterials) {
+        const base = this.baseColors.get(mat)
+        if (base) {
+          mat.color.copy(base)
+          if ('emissive' in mat && mat.emissive instanceof THREE.Color) {
+            mat.emissive.setHex(0)
+          }
+        }
+      }
+    }, 300)
   }
 
   isSheepInside(sheepPosition: THREE.Vector3): boolean {
@@ -99,6 +129,18 @@ export class Pen {
     addHorizontalSegment(gateHalf, this.halfWidth, backZ, new THREE.Vector3(0, 0, 1))
 
     return colliders
+  }
+
+  private captureFenceMaterials(): void {
+    this.mesh.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
+        const material = child.material
+        if (!this.baseColors.has(material)) {
+          this.fenceMaterials.push(material)
+          this.baseColors.set(material, material.color.clone())
+        }
+      }
+    })
   }
 }
 

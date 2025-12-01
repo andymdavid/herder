@@ -41,6 +41,7 @@ export class Game {
   private remainingTime: number
   private readonly collisionNormal = new THREE.Vector3()
   private elapsed = 0
+  private sheepInsideLast = 0
 
   constructor(config: GameConfig) {
     this.scene = config.scene
@@ -128,7 +129,12 @@ export class Game {
     const sheepInside = this.sheepManager
       .getAll()
       .filter((sheep) => this.pen.isSheepInside(sheep.position)).length
-    this.hud.updateSheepCount(sheepInside, this.sheepManager.totalSheep)
+    const delta = sheepInside - this.sheepInsideLast
+    this.hud.updateSheepCount(sheepInside, this.sheepManager.totalSheep, delta)
+    if (delta > 0) {
+      this.pen.flashHighlight()
+    }
+    this.sheepInsideLast = sheepInside
 
     if (
       !this.levelComplete &&

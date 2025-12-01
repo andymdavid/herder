@@ -16,11 +16,12 @@ export function setupLighting({ scene, shadowSize, terrainSize }: LightingOption
 
   const sun = new THREE.DirectionalLight(0xffce9a, 1.35)
   sun.position.set(35, 60, 25)
+  sun.target.position.set(0, 0, 0)
   sun.castShadow = true
   sun.shadow.mapSize.set(shadowSize, shadowSize)
   sun.shadow.camera.near = 5
   sun.shadow.camera.far = 140
-  const half = terrainSize / 2
+  const half = terrainSize / 2 + 8
   sun.shadow.camera.left = -half
   sun.shadow.camera.right = half
   sun.shadow.camera.top = half
