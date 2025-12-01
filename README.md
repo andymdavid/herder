@@ -1,4 +1,4 @@
-# Shepherd's Path
+# Yuletide Herding
 A tiny voxel herding prototype built with TypeScript, Three.js, and Vite. You control a sheepdog from an isometric camera, guiding wandering sheep into a floating pen before time expires.
 
 ## Getting Started
@@ -17,9 +17,10 @@ A tiny voxel herding prototype built with TypeScript, Three.js, and Vite. You co
    ```
 
 ## Controls & Objective
-- `WASD` / arrow keys — move the dog.
+- Desktop: `WASD` / arrow keys move the dog.
+- Touch devices: drag anywhere on the screen to steer; release to stop.
 - Herd every sheep into the fenced pen before the timer hits zero.
-- A HUD in the top bar shows remaining time and how many sheep are safe.
+- HUD shows remaining time and sheep collected; the music toggle lets you mute the ambience.
 
 ## Project Structure
 - `src/main.ts` – Three.js bootstrap, renderer/camera setup, main loop.
