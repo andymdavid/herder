@@ -7,7 +7,7 @@ import { createTerrain } from './Terrain'
 
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0xb7dba5)
-scene.fog = new THREE.Fog(scene.background.getHex(), 30, 80)
+scene.fog = new THREE.Fog(scene.background.getHex(), 30, 90)
 
 const camera = new THREE.PerspectiveCamera(
   55,
@@ -39,7 +39,7 @@ scene.add(sunLight)
 scene.add(sunLight.target)
 
 const config = GAME_CONFIG
-const terrain = createTerrain(config.terrainSize, config.terrainSize)
+const terrain = createTerrain(config.terrainSize, config.terrainSize, config.terrainHeight)
 scene.add(terrain)
 
 const game = new Game({

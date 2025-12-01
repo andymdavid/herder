@@ -24,6 +24,7 @@ export interface PenSettings {
 
 export interface GameSettings {
   terrainSize: number
+  terrainHeight: number
   dog: DogSettings
   sheep: SheepSettings
   pen: PenSettings
@@ -32,6 +33,7 @@ export interface GameSettings {
 
 export const GAME_CONFIG: GameSettings = {
   terrainSize: 40,
+  terrainHeight: 1.5,
   levelTimerSeconds: 60,
   dog: {
     moveSpeed: 6,
@@ -50,12 +52,16 @@ export const GAME_CONFIG: GameSettings = {
       { x: -2, z: 4 },
       { x: 3, z: -3 },
       { x: 6, z: 2 },
-      { x: 0, z: 0 }
+      { x: 0, z: 0 },
+      { x: -8, z: 4 },
+      { x: 8, z: -4 },
+      { x: -4, z: 2 },
+      { x: 4, z: -2 }
     ]
   },
   pen: {
-    width: 10,
-    height: 8,
+    width: 12,
+    height: 9,
     position: { x: 12, z: -6 }
   }
 }
